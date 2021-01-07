@@ -1,0 +1,48 @@
+{
+    "description": "ProcessInvoice",
+    "path": "/ProcessInvoice",
+    "method": "post",
+    "request": {
+        "scheme": "",
+        "host": "",
+        "port": "",
+        "queryStringParameters": null,
+        "fragment": "",
+        "headers": null,
+        "cookies": null,
+        "body": "",
+        "method": "POST",
+        "path": "/ProcessInvoice"
+    },
+    "response": {
+        "statusCode": 200,
+        "headers":{  
+            "Content-Type":[  
+                "Content-type: application/xml"
+            ]
+        },
+        "body": "<?xml version=\"1.0\" encoding=\"utf-8\"?><RestSuccessResponse><Success>true</Success></RestSuccessResponse>"
+    },
+    "callback": [
+        {
+            "method": "POST",
+            "headers": {
+                "Content-Type": [
+                    "application/xml"
+                ]
+            },
+            "url": "http://localhost:3000/getAuthToken",
+            "body": "<?xml version=\"1.0\" encoding=\"utf-8\"?><env:Envelope xmlns:env=\"http://schemas.xmlsoap.org/soap/envelope/\"><env:Body><getAuthToken xmlns=\"http://security.services.scope.manh.com/\"><arg0 xmlns=\"\">oms</arg0><arg1 xmlns=\"\">oms</arg1></getAuthToken></env:Body></env:Envelope>"
+        },
+        {
+            "method": "POST",
+            "headers": {
+                "Content-Type": [
+                    "application/xml"
+                ]
+            },
+            "url": "http://localhost:3000/InvoicingService",
+            "body": "<?xml version=\"1.0\" encoding=\"utf-8\"?><env:Envelope xmlns:env=\"http://schemas.xmlsoap.org/soap/envelope/\"><env:Header><GeneratedWithSuccess xmlns=\"http://service.cbo.services.wmos.manh.com/\">OK</GeneratedWithSuccess><HasAssociatedInvoice xmlns=\"http://service.cbo.services.wmos.manh.com/\">false</HasAssociatedInvoice><oLPN xmlns=\"http://service.cbo.services.wmos.manh.com/\">256019880025442066</oLPN></env:Header><env:Body><InvoiceService xmlns=\"http://service.cbo.services.wmos.manh.com/\"><ContextId xmlns=\"\">{{ response.body.Envelope.Body.getAuthTokenResponse.return }}</ContextId><Invoice xmlns=\"\"><OrderId>{{ request.body.event.event_details.header.property.#(-name==\"TC_ORDER_ID\").-value }}</OrderId><OrderNumber>QA002129</OrderNumber><ShipmentID>bcc19737-b334-44ff-976a-fb91f644af11</ShipmentID><ShipmentNumber>55107818_001</ShipmentNumber><NumberOfItems>1</NumberOfItems><ItemsTotalAmount>0</ItemsTotalAmount><ItemsDiscountsAmount>0</ItemsDiscountsAmount><ItemsLoyaltyDiscountsAmount>0</ItemsLoyaltyDiscountsAmount><OrderDiscountsAmount>0</OrderDiscountsAmount><LoyaltyDiscountUsed>0</LoyaltyDiscountUsed><CouponDiscountUsed>0</CouponDiscountUsed><SubTotalValue>0</SubTotalValue><TotalValue>0</TotalValue></Invoice></InvoiceService></env:Body></env:Envelope>"
+        }
+    ]
+}

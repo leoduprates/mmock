@@ -97,13 +97,19 @@ func (di *Dispatcher) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	//translate request
 	di.Translator.WriteHTTPResponseFromDefinition(transaction.Response, w)
 
-	if mock.Callback.Url != "" {
+	if len(mock.Callback) > 0 {
 		go func() {
-			_, err := HandleCallback(mock.Callback)
-			if err != nil {
-				log.Printf("Error from HandleCallback: %s", err)
-			} else {
-				log.Println("Callback made successfully")
+			for i, cb := range mock.Callback {
+				resp, err := HandleCallback(cb)
+				body, _ := ioutil.ReadAll(resp.Body)
+				mock.Callback[i].Response = string(body)
+				di.Evaluator.Eval(nil, mock)
+
+				if err != nil {
+					log.Printf("Error from HandleCallback: %s", err)
+				} else {
+					log.Println("Callback made successfully")
+				}
 			}
 		}()
 	}

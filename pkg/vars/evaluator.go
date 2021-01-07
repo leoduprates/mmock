@@ -26,7 +26,10 @@ func (fp ResponseMessageEvaluator) Eval(req *mock.Request, m *mock.Definition) {
 	fakeFiller := fp.FillerFactory.CreateFakeFiller()
 	streamFiller := fp.FillerFactory.CreateStreamFiller()
 	holders := fp.walkAndGet(m.Response)
-	fp.extractVars(m.Callback.Body, &holders)
+
+	for _, cb := range m.Callback {
+		fp.extractVars(cb.Body, &holders)
+	}
 
 	vars := requestFiller.Fill(holders)
 	fp.mergeVars(vars, fakeFiller.Fill(holders))
@@ -57,14 +60,16 @@ func (fp ResponseMessageEvaluator) walkAndFill(m *mock.Definition, vars map[stri
 		for i, value := range values {
 			res.Headers[header][i] = fp.replaceVars(value, vars)
 		}
-
 	}
 	for cookie, value := range res.Cookies {
 		res.Cookies[cookie] = fp.replaceVars(value, vars)
 	}
 
 	res.Body = fp.replaceVars(res.Body, vars)
-	m.Callback.Body = fp.replaceVars(m.Callback.Body, vars)
+
+	for i, cb := range m.Callback {
+		m.Callback[i].Body = fp.replaceVars(cb.Body, vars)
+	}
 }
 
 func (fp ResponseMessageEvaluator) replaceVars(input string, vars map[string][]string) string {

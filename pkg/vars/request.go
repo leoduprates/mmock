@@ -2,6 +2,7 @@ package vars
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"os"
 	"sort"
@@ -20,7 +21,6 @@ type Request struct {
 }
 
 func (rp Request) Fill(holders []string) map[string][]string {
-
 	vars := make(map[string][]string)
 	for _, tag := range holders {
 		found := false
@@ -54,6 +54,8 @@ func (rp Request) Fill(holders []string) map[string][]string {
 			s, found = rp.getHeaderParam(tag[15:])
 		} else if strings.HasPrefix(tag, "env.") {
 			s, found = os.LookupEnv(tag[4:])
+		} else if strings.HasPrefix(tag, "response.body.") {
+			s, found = rp.getCallbackResponseParam(tag[14:])
 		}
 
 		if found {
@@ -166,23 +168,45 @@ func (rp Request) getHeaderParam(name string) (string, bool) {
 
 func (rp Request) getBodyParam(name string) (string, bool) {
 	contentType, found := rp.Request.Headers["Content-Type"]
+	log.Printf("contentType: %v", contentType)
 	if !found {
 		return "", false
 	}
 	if strings.HasPrefix(contentType[0], "application/x-www-form-urlencoded") {
-		return rp.getUrlEncodedFormBodyParam(name)
+		return rp.getUrlEncodedFormBodyParam(rp.Request.Body, name)
 	} else if strings.HasPrefix(contentType[0], "application/xml") || strings.HasPrefix(contentType[0], "text/xml") {
-		return rp.getXmlBodyParam(name)
+		return rp.getXmlBodyParam(rp.Request.Body, name)
 	} else if strings.HasPrefix(contentType[0], "application/json") {
-		return rp.getJsonBodyParam(name)
+		return rp.getJsonBodyParam(rp.Request.Body, name)
 	}
 
 	return "", false
 }
 
-func (rp Request) getXmlBodyParam(name string) (string, bool) {
-	xml := strings.NewReader(rp.Request.Body)
+func (rp Request) getCallbackResponseParam(name string) (string, bool) {
+	for _, cb := range rp.Mock.Callback {
+		contentType, found := cb.Headers["Content-Type"]
+		log.Printf("contentType: %v", contentType)
+		if !found {
+			return "", false
+		}
+		if strings.HasPrefix(contentType[0], "application/x-www-form-urlencoded") {
+			return rp.getUrlEncodedFormBodyParam(cb.Response, name)
+		} else if strings.HasPrefix(contentType[0], "application/xml") || strings.HasPrefix(contentType[0], "text/xml") {
+			return rp.getXmlBodyParam(cb.Response, name)
+		} else if strings.HasPrefix(contentType[0], "application/json") {
+			return rp.getJsonBodyParam(cb.Response, name)
+		}
+	}
+
+	return "", false
+}
+
+func (rp Request) getXmlBodyParam(body string, name string) (string, bool) {
+	xml := strings.NewReader(body)
 	json, err := xj.Convert(xml)
+	log.Printf("XML to JSON: %v", json)
+
 	if err != nil {
 		return "", false
 	}
@@ -200,17 +224,17 @@ func (rp Request) getXmlBodyParam(name string) (string, bool) {
 	return value.String(), true
 }
 
-func (rp Request) getJsonBodyParam(name string) (string, bool) {
-	value := gjson.Get(rp.Request.Body, name)
+func (rp Request) getJsonBodyParam(body string, name string) (string, bool) {
+	value := gjson.Get(body, name)
 	if !value.Exists() {
 		return "", false
 	}
 	return value.String(), true
 }
 
-func (rp Request) getUrlEncodedFormBodyParam(name string) (string, bool) {
+func (rp Request) getUrlEncodedFormBodyParam(body string, name string) (string, bool) {
+	values, err := url.ParseQuery(body)
 
-	values, err := url.ParseQuery(rp.Request.Body)
 	if err != nil {
 		return "", false
 	}

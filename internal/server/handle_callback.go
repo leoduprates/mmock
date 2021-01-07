@@ -42,6 +42,7 @@ func HandleCallback(cb mock.Callback) (*http.Response, error) {
 		return nil, fmt.Errorf("Error making HTTP request: %w", err)
 	}
 	statusCode := resp.StatusCode
+
 	if statusCode >= 400 {
 		body, errBody := ioutil.ReadAll(resp.Body)
 		if errBody != nil {
