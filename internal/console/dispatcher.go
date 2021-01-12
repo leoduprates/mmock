@@ -97,7 +97,7 @@ func (di *Dispatcher) Start() {
 	e.GET("/api/mapping", di.mappingListHandler)
 	e.GET("/api/mapping/*", di.mappingGetHandler)
 	e.POST("/api/mapping/*", di.mappingCreateHandler)
-	e.POST("/api/mappings/*", di.mappingCreateHandlers)
+	e.POST("/api/mappings", di.mappingCreateHandlers)
 	e.PUT("/api/mapping/*", di.mappingUpdateHandler)
 	e.DELETE("/api/mapping/*", di.mappingDeleteHandler)
 
