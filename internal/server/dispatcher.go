@@ -140,15 +140,19 @@ func getProxyResponse(request *mock.Request, definition *mock.Definition) *mock.
 func (di *Dispatcher) getMatchingResult(request *mock.Request) (*mock.Definition, *match.Transaction) {
 	response := &mock.Response{}
 	mock, result := di.Resolver.Resolve(request)
+	var byPassProxy = false
 
 	log.Printf("Definition match found: %s. Name : %s\n", strconv.FormatBool(result.Found), mock.URI)
 
+	if len(request.HttpHeaders.Headers["Bypassproxy"]) > 0 {
+		byPassProxy, _ = strconv.ParseBool(request.HttpHeaders.Headers["Bypassproxy"][0])
+	}
+
 	if result.Found {
-		if len(mock.Control.ProxyBaseURL) > 0 {
+		if byPassProxy && len(mock.Control.ProxyBaseURL) > 0 {
 			statistics.TrackProxyFeature()
 			response = getProxyResponse(request, mock)
 		} else {
-
 			di.Evaluator.Eval(request, mock)
 			if mock.Control.Crazy {
 				log.Println("Running crazy mode")
