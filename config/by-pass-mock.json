@@ -17,6 +17,7 @@
 		"body": "{ \"base\": \"EUR\", \"rates\": { \"GBP\": {{ fake.Digits }}, }, \"date\": {{ fake.Day }}-{{ fake.MonthNum }}-{{ fake.Year }} }"
 	},
 	"control": {
+		"proxyRequestRule": "request.body.[@this].#(field !% \"QA*\").field",
 		"proxyBaseURL": "http://api.ratesapi.io/api/latest"
 	}
 }

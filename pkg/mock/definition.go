@@ -81,12 +81,13 @@ func (d *Delay) UnmarshalJSON(data []byte) (err error) {
 }
 
 type Control struct {
-	Priority     int      `json:"priority"`
-	Delay        Delay    `json:"delay"`
-	Crazy        bool     `json:"crazy"`
-	Scenario     Scenario `json:"scenario"`
-	ProxyBaseURL string   `json:"proxyBaseURL"`
-	WebHookURL   string   `json:"webHookURL"`
+	Priority         int      `json:"priority"`
+	Delay            Delay    `json:"delay"`
+	Crazy            bool     `json:"crazy"`
+	Scenario         Scenario `json:"scenario"`
+	ProxyRequestRule string   `json:"proxyRequestRule"`
+	ProxyBaseURL     string   `json:"proxyBaseURL"`
+	WebHookURL       string   `json:"webHookURL"`
 }
 
 //Definition contains the user mock config
