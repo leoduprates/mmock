@@ -183,7 +183,7 @@ func (di *Dispatcher) mappingDeleteHandler(c echo.Context) (err error) {
 }
 
 func (di *Dispatcher) mappingLoadHandler(c echo.Context) (err error) {
-	mock := &mock.Definition{}
+	mock := &[]mock.Definition{}
 	config := strings.TrimPrefix(c.Request().URL.Path, "/api/mapping/load/")
 
 	resp, err := http.Get(config)
@@ -195,16 +195,18 @@ func (di *Dispatcher) mappingLoadHandler(c echo.Context) (err error) {
 		return c.JSON(http.StatusBadRequest, ar)
 	}
 
-	if _, ok := di.Mapping.Get(mock.URI); ok {
-		ar := &ActionResponse{
-			Result: "already_exists",
+	for _, m := range *mock {
+		URI := di.getMappingUri(m.URI)
+		if _, ok := di.Mapping.Get(URI); ok {
+			ar := &ActionResponse{
+				Result: "already_exists",
+			}
+			return c.JSON(http.StatusConflict, ar)
 		}
-		return c.JSON(http.StatusConflict, ar)
-	}
-
-	err = di.Mapping.Set(mock.URI, *mock)
-	if err != nil {
-		return
+		err = di.Mapping.Set(URI, m)
+		if err != nil {
+			return
+		}
 	}
 
 	ar := &ActionResponse{
