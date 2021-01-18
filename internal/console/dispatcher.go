@@ -1,6 +1,7 @@
 package console
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -99,7 +100,7 @@ func (di *Dispatcher) Start() {
 	e.POST("/api/mapping/*", di.mappingCreateHandler)
 	e.PUT("/api/mapping/*", di.mappingUpdateHandler)
 	e.DELETE("/api/mapping/*", di.mappingDeleteHandler)
-
+	e.POST("/api/mapping/load/*", di.mappingLoadHandler)
 	//POST api/mapping (all)
 
 	go di.logFanOut()
@@ -179,6 +180,37 @@ func (di *Dispatcher) mappingDeleteHandler(c echo.Context) (err error) {
 	}
 	return c.JSON(http.StatusOK, ar)
 
+}
+
+func (di *Dispatcher) mappingLoadHandler(c echo.Context) (err error) {
+	mock := &mock.Definition{}
+	config := strings.TrimPrefix(c.Request().URL.Path, "/api/mapping/load/")
+
+	resp, err := http.Get(config)
+
+	if err = json.NewDecoder(resp.Body).Decode(&mock); err != nil {
+		ar := &ActionResponse{
+			Result: "invalid_mock_definition",
+		}
+		return c.JSON(http.StatusBadRequest, ar)
+	}
+
+	if _, ok := di.Mapping.Get(mock.URI); ok {
+		ar := &ActionResponse{
+			Result: "already_exists",
+		}
+		return c.JSON(http.StatusConflict, ar)
+	}
+
+	err = di.Mapping.Set(mock.URI, *mock)
+	if err != nil {
+		return
+	}
+
+	ar := &ActionResponse{
+		Result: "created",
+	}
+	return c.JSON(http.StatusCreated, ar)
 }
 
 func (di *Dispatcher) mappingCreateHandler(c echo.Context) (err error) {
