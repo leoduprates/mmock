@@ -1,6 +1,6 @@
 [
   {
-    "URI": "load-config.json",
+    "URI": "load-config-file.json",
     "description": "Returns 'Hello world!' and sets the 'visit' cookie",
     "request": {
       "method": "GET",
