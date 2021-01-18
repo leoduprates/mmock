@@ -184,9 +184,19 @@ func (di *Dispatcher) mappingDeleteHandler(c echo.Context) (err error) {
 
 func (di *Dispatcher) mappingLoadHandler(c echo.Context) (err error) {
 	mock := &[]mock.Definition{}
-	config := strings.TrimPrefix(c.Request().URL.Path, "/api/mapping/load/")
+	client := &http.Client{}
 
-	resp, err := http.Get(config)
+	url := strings.TrimPrefix(c.Request().URL.Path, "/api/mapping/load/")
+	req, _ := http.NewRequest("GET", url, nil)
+	req.Header = c.Request().Header
+
+	resp, ok := client.Do(req)
+	if ok != nil {
+		ar := &ActionResponse{
+			Result: "not_found",
+		}
+		return c.JSON(http.StatusNotFound, ar)
+	}
 
 	if err = json.NewDecoder(resp.Body).Decode(&mock); err != nil {
 		ar := &ActionResponse{
