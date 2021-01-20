@@ -101,13 +101,13 @@ func (di *Dispatcher) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		go func() {
 			for i, cb := range mock.Callback {
 				resp, err := HandleCallback(cb)
-				body, _ := ioutil.ReadAll(resp.Body)
-				mock.Callback[i].Response = string(body)
-				di.Evaluator.Eval(nil, mock)
 
 				if err != nil {
 					log.Printf("Error from HandleCallback: %s", err)
 				} else {
+					body, _ := ioutil.ReadAll(resp.Body)
+					mock.Callback[i].Response = string(body)
+					di.Evaluator.Eval(nil, mock)
 					log.Println("Callback made successfully")
 				}
 			}
