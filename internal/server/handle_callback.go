@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -36,7 +37,16 @@ func HandleCallback(cb mock.Callback) (*http.Response, error) {
 	if cb.Timeout.Duration > 0 {
 		timeout = cb.Timeout.Duration
 	}
-	client := &http.Client{Timeout: timeout}
+
+	tr := &http.Transport{}
+	if cb.InsecureSkipVerify == true {
+		tr = &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	}
+
+	client := &http.Client{Timeout: timeout, Transport: tr}
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error making HTTP request: %w", err)
