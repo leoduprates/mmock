@@ -42,10 +42,7 @@ type Callback struct {
 	Body               string `json:"body"`
 	Timeout            Delay  `json:"timeout"`
 	InsecureSkipVerify bool   `json:"insecureSkipVerify"`
-<<<<<<< HEAD
 	Response           string
-=======
->>>>>>> b8788448da8fdde5f5e6bfefd8222d1cafbfacc6
 }
 
 type Scenario struct {

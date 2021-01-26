@@ -8,3 +8,4 @@ coverage.txt
 dist
 .vscode
 .idea
+config/internal-*
