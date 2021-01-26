@@ -79,7 +79,7 @@ func (di *Dispatcher) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	log.Printf("New request: %s %s\n", req.Method, req.URL.String())
 
-	mock, transaction := di.getMatchingResult(&mRequest)
+	mock, request, transaction := di.getMatchingResult(&mRequest)
 
 	//save the match info
 	di.Spier.Save(*transaction)
@@ -107,7 +107,7 @@ func (di *Dispatcher) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 				} else {
 					body, _ := ioutil.ReadAll(resp.Body)
 					mock.Callback[i].Response = string(body)
-					di.Evaluator.Eval(nil, mock)
+					di.Evaluator.Eval(request, mock)
 					log.Println("Callback made successfully")
 				}
 			}
@@ -143,7 +143,7 @@ func getProxyResponse(request *mock.Request, definition *mock.Definition) *mock.
 	return pr.MakeRequest(request)
 }
 
-func (di *Dispatcher) getMatchingResult(request *mock.Request) (*mock.Definition, *match.Transaction) {
+func (di *Dispatcher) getMatchingResult(request *mock.Request) (*mock.Definition, *mock.Request, *match.Transaction) {
 	response := &mock.Response{}
 	mock, result := di.Resolver.Resolve(request)
 
@@ -176,7 +176,7 @@ func (di *Dispatcher) getMatchingResult(request *mock.Request) (*mock.Definition
 
 	match := match.NewTransaction(request, response, result)
 
-	return mock, match
+	return mock, request, match
 
 }
 

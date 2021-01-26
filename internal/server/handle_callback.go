@@ -19,7 +19,7 @@ func HandleCallback(cb mock.Callback) (*http.Response, error) {
 	}
 
 	url := cb.Url
-	log.Printf("Making callback to %s\n", url)
+	log.Printf("Making callback to %s\nBody: %s\n", url, cb.Body)
 	req, err := http.NewRequest(cb.Method, url, bytes.NewBufferString(cb.Body))
 	if err != nil {
 		return nil, fmt.Errorf("Error creating HTTP request: %w", err)
