@@ -1,0 +1,23 @@
+{
+	"description": "Example for proxy usage",
+	"request": {
+		"method": "GET",
+		"path": "/proxy/bypass"
+	},
+	"response": {
+		"statusCode": 200,
+		"cookies": {
+			"visit": "true"
+		},
+		"headers": {
+			"Content-Type": [
+				"Content-type: application/json"
+			]
+		},
+		"body": "{ \"base\": \"EUR\", \"rates\": { \"GBP\": {{ fake.Digits }}, }, \"date\": {{ fake.Day }}-{{ fake.MonthNum }}-{{ fake.Year }} }"
+	},
+	"control": {
+		"proxyRequestRule": "request.body.[@this].#(field !% \"QA*\").field",
+		"proxyBaseURL": "http://api.ratesapi.io/api/latest"
+	}
+}
