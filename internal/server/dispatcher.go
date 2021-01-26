@@ -145,12 +145,14 @@ func getProxyResponse(request *mock.Request, definition *mock.Definition) *mock.
 
 func (di *Dispatcher) getMatchingResult(request *mock.Request) (*mock.Definition, *mock.Request, *match.Transaction) {
 	response := &mock.Response{}
+	callback := []mock.Callback{}
 	mock, result := di.Resolver.Resolve(request)
 
 	log.Printf("Definition match found: %s. Name : %s\n", strconv.FormatBool(result.Found), mock.URI)
 
 	if result.Found {
 		if len(mock.Control.ProxyBaseURL) > 0 {
+			mock.Callback = callback
 			statistics.TrackProxyFeature()
 			response = getProxyResponse(request, mock)
 		} else {
