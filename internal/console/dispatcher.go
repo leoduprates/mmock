@@ -98,6 +98,7 @@ func (di *Dispatcher) Start() {
 	e.GET("/api/mapping", di.mappingListHandler)
 	e.GET("/api/mapping/*", di.mappingGetHandler)
 	e.POST("/api/mapping/*", di.mappingCreateHandler)
+	e.POST("/api/mappings", di.mappingCreateHandlers)
 	e.PUT("/api/mapping/*", di.mappingUpdateHandler)
 	e.DELETE("/api/mapping/*", di.mappingDeleteHandler)
 	e.POST("/api/mapping/load/*", di.mappingLoadHandler)
@@ -254,6 +255,38 @@ func (di *Dispatcher) mappingCreateHandler(c echo.Context) (err error) {
 	}
 	return c.JSON(http.StatusCreated, ar)
 
+}
+
+func (di *Dispatcher) mappingCreateHandlers(c echo.Context) (err error) {
+	mock := &[]mock.Definition{}
+
+	if err = c.Bind(mock); err != nil {
+		ar := &ActionResponse{
+			Result: "invalid_mock_definition",
+		}
+		return c.JSON(http.StatusBadRequest, ar)
+	}
+
+	for _, m := range *mock {
+		URI := di.getMappingUri(m.URI)
+
+		if _, ok := di.Mapping.Get(URI); ok {
+			ar := &ActionResponse{
+				Result: "already_exists",
+			}
+			return c.JSON(http.StatusConflict, ar)
+		}
+
+		err = di.Mapping.Set(URI, m)
+		if err != nil {
+			return
+		}
+	}
+
+	ar := &ActionResponse{
+		Result: "created",
+	}
+	return c.JSON(http.StatusCreated, ar)
 }
 
 func (di *Dispatcher) mappingUpdateHandler(c echo.Context) (err error) {
